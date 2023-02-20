@@ -3,6 +3,7 @@ import numpy as np
 #import RPi.GPIO as GPIO
 #cap = cv2.VideoCapture(1)
 #cap = cv2.VideoCapture(r"C:/Users/giovi/Desktop/RoboCup/Sync2/newCode/vids/VideoCapture01.mp4")
+
 cap = cv2.VideoCapture(r"C:/Users/giovi/Desktop/RoboCup/Sync2/newCode/vids/VideoCapture01-flipped.mp4")
 """
 in1 = 4
