@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
+from Squares_Detection import Detect_Squares as square
 #import RPi.GPIO as GPIO
+
 #cap = cv2.VideoCapture(1)
 #cap = cv2.VideoCapture(r"C:/Users/giovi/Desktop/RoboCup/Sync2/newCode/vids/VideoCapture01.mp4")
 cap = cv2.VideoCapture(r"C:\Users\giovi\Desktop\RoboCup\Sync2\newCode\vids\2023-02-20 ore 18.57.44_mod.mp4")
@@ -38,6 +40,12 @@ while True:
     low_b = np.uint8([179, 115, 255])
     high_b = np.uint8([0, 0, 0])
     mask = cv2.inRange(frame, high_b, low_b)
+
+    segmented_img, sq_mask = square(frame)
+
+    mask -= sq_mask
+
+    cv2.imshow("Mask", mask)
 
     contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
 
