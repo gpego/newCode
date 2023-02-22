@@ -20,10 +20,7 @@ def Detect_Squares(img):
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-    # Segment only the detected region
-    segmented_img = cv2.bitwise_and(img, img, mask=mask)
-
-    return segmented_img, mask
+    return mask
 
 
 
@@ -37,13 +34,13 @@ if __name__ == "__main__":
 
         img = cv2.resize(frame,(160, 120))
 
-        segmented_img, mask = Detect_Squares(img)
+        mask = Detect_Squares(img)
 
         # Find contours from the mask
 
-        contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        output = cv2.drawContours(segmented_img, contours, -1, (0, 0, 255), 3)
+        output = cv2.drawContours(img, contours, -1, (0, 0, 255), 3)
 
         # Showing the output
 
