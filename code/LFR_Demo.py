@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from Squares_Detection import Detect_Squares as square
+from Squares_Detection import Detect_Squares
 #import RPi.GPIO as GPIO
 
 #cap = cv2.VideoCapture(1)
@@ -37,20 +37,18 @@ while True:
 
     frame = cv2.resize(img,(160, 120))
 
+    segmented_img, sq_mask = Detect_Squares(frame)
+
     low_b = np.uint8([179, 115, 255])
     high_b = np.uint8([0, 0, 0])
     mask = cv2.inRange(frame, high_b, low_b)
 
-    segmented_img, sq_mask = square(frame)
+    new_mask = cv2.subtract(mask, sq_mask)
 
-    mask -= sq_mask
-
-    cv2.imshow("Mask", mask)
-
-    contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(new_mask, 1, cv2.CHAIN_APPROX_NONE)
 
     if len(contours) > 0 :
-        c = max(contours, key=cv2.contourArea)
+        c = max(contours, key=cv2.contourArea)  # Keeping the biggest contour
         M = cv2.moments(c)
 
         if M["m00"] !=0 :
