@@ -37,26 +37,34 @@ while True:
 
     frame = cv2.resize(img,(160, 120))
 
+    # Searching for green sqares
     segmented_img, sq_mask = Detect_Squares(frame)
 
+    # Image preprocessing
     low_b = np.uint8([179, 115, 255])
     high_b = np.uint8([0, 0, 0])
     mask = cv2.inRange(frame, high_b, low_b)
 
+    # Removing green sqaures area from the track mask
     new_mask = cv2.subtract(mask, sq_mask)
 
+    # Detecting track contours
     contours, hierarchy = cv2.findContours(new_mask, 1, cv2.CHAIN_APPROX_NONE)
 
+    # Checking for contours' availability
     if len(contours) > 0 :
         c = max(contours, key=cv2.contourArea)  # Keeping the biggest contour
         M = cv2.moments(c)
 
+        cv2.drawContours(frame, c, -1, (0,255,0), 1)    # Drawing contours on the frame
+
         if M["m00"] !=0 :
+            # Calculating countours' center point
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             print("CX : "+str(cx)+"  CY : "+str(cy))
 
-
+            """
             # Searching for L turns without green squares
             if count <= 1:
                 mem = cx
@@ -68,8 +76,9 @@ while True:
             else:
                 count = 0
                 mem = cx
+            """
 
-
+            # Turning
             if cx >= 120 :
                 print("Turn Left")
                 
@@ -83,10 +92,11 @@ while True:
     else :
         print("I don't see the line")
 
-    cv2.drawContours(frame, c, -1, (0,255,0), 1)
+    # Video output
     cv2.imshow("Mask",mask)
     cv2.imshow("Frame",frame)
 
+    # Exiting the loop
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
         """
         GPIO.output(in1, GPIO.LOW)
