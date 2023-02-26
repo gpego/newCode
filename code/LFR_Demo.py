@@ -7,6 +7,10 @@ from Squares_Detection import Detect_Squares
 #cap = cv2.VideoCapture(r"C:/Users/giovi/Desktop/RoboCup/Sync2/newCode/vids/VideoCapture01.mp4")
 cap = cv2.VideoCapture(r"C:\Users\giovi\Desktop\RoboCup\Sync2\newCode\vids\2023-02-20 ore 18.57.44_mod.mp4")
 
+maxSpeed = 40
+# Min. value for curveSens = 2
+curveSens = 3
+
 """
 in1 = 4
 in2 = 17
@@ -30,23 +34,28 @@ GPIO.output(in2, GPIO.LOW)
 GPIO.output(in3, GPIO.LOW)
 GPIO.output(in4, GPIO.LOW)
 """
-count = 0
 
 while True:
     ret, img = cap.read()
 
-    frame = cv2.resize(img,(160, 120))
+    frame = cv2.resize(img,(64, 64))
+
+    # IMAGE PRE-PROCESSING
+
+    # Convert to gray scale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Blur the image
+    blur = cv2.blur(gray, (5,5))
 
     # Searching for green sqares
-    segmented_img, sq_mask = Detect_Squares(frame)
+    sq_mask = Detect_Squares(frame)
 
-    # Image preprocessing
-    low_b = np.uint8([179, 115, 255])
-    high_b = np.uint8([0, 0, 0])
-    mask = cv2.inRange(frame, high_b, low_b)
+    # Line detection
+    th3 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 51, 8)
 
     # Removing green sqaures area from the track mask
-    new_mask = cv2.subtract(mask, sq_mask)
+    new_mask = cv2.subtract(th3, sq_mask)
 
     # Detecting track contours
     contours, hierarchy = cv2.findContours(new_mask, 1, cv2.CHAIN_APPROX_NONE)
@@ -62,22 +71,25 @@ while True:
             # Calculating countours' center point
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
+
             print("CX : "+str(cx)+"  CY : "+str(cy))
 
-            """
-            # Searching for L turns without green squares
-            if count <= 1:
-                mem = cx
-                count += 1
-            
-            if abs(cx - mem) > 10 & count <= 100:
-                cx = mem
-                count += 1
-            else:
-                count = 0
-                mem = cx
-            """
+            # MOTORS CONTROL
 
+            if cx > 32:
+                # Far-right
+                if cx > 48:
+                    speed = cx - 48
+                    leftSpeed = 16 - int(speed / curveSens)
+                    rightSpeed = leftSpeed
+                    # INVERTIRE SENSO DI ROTAZIONE MOTORI!!!!!!!
+                # Right
+                else:
+                    speed = cx - 32
+                    leftSpeed = 16 - int(speed / curveSens)
+                    rightSpeed = 16 - speed
+                    #STESSO SENSO DI ROTAZIONE!!!!!!!!
+            
             # Turning
             if cx >= 120 :
                 print("Turn Left")
@@ -88,13 +100,13 @@ while True:
             if cx <=40 :
                 print("Turn Right")
                 
-            cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)
+            cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)    # Drawing centerpoint on the frame
     else :
         print("I don't see the line")
 
     # Video output
-    cv2.imshow("Mask",mask)
-    cv2.imshow("Frame",frame)
+    cv2.imshow("Mask", new_mask)
+    cv2.imshow("Frame", frame)
 
     # Exiting the loop
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
