@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 
-def Detect_Squares(img):
-    # convert to hsv colorspace
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+def Detect_Squares(frame):
+    # Convert to HSV colorspace
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # lower bound and upper bound for Green color
     lower_bound = np.array([50, 20, 20])	 
