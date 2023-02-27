@@ -8,8 +8,8 @@ from Squares_Detection import Detect_Squares
 cap = cv2.VideoCapture(r"C:\Users\giovi\Desktop\RoboCup\Sync2\newCode\vids\2023-02-20 ore 18.57.44_mod.mp4")
 
 maxSpeed = 40
-# Min. value for curveSens = 2
-curveSens = 3
+# Greater curveSens --> faster turn
+curveSens = 4   # Min. value for curveSens = 2
 
 """
 in1 = 4
@@ -76,37 +76,66 @@ while True:
 
             # MOTORS CONTROL
 
-            if cx > 32:
+            # cx > (32 + 8 / 2)
+            if cx > 36:
                 # Far-right
-                if cx > 48:
-                    speed = cx - 48
+                if cx >= 48:
+                    speed = cx - 48 # Range 0 - 16
+
                     leftSpeed = 16 - int(speed / curveSens)
                     rightSpeed = leftSpeed
+
+                    leftSpeed = leftSpeed / 16 * maxSpeed
+                    rightSpeed = rightSpeed / 16 * maxSpeed
+
                     # INVERTIRE SENSO DI ROTAZIONE MOTORI!!!!!!!
+
                 # Right
                 else:
-                    speed = cx - 32
+                    speed = cx - 32 # Range 0 - 16
+
                     leftSpeed = 16 - int(speed / curveSens)
                     rightSpeed = 16 - speed
+
+                    leftSpeed = leftSpeed / 16 * maxSpeed
+                    rightSpeed = rightSpeed / 16 * maxSpeed
+
                     #STESSO SENSO DI ROTAZIONE!!!!!!!!
             
-            # Turning
-            if cx >= 120 :
-                print("Turn Left")
-                
-            if cx < 120 and cx > 40 :
-                print("On Track!")
-                
-            if cx <=40 :
-                print("Turn Right")
-                
-            cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)    # Drawing centerpoint on the frame
+            # cx < (32 - 8 / 4)
+            if cx < 28:
+                # Far-left
+                if cx <= 16:
+                    speed = cx # Range 0 - 16
+
+                    rightSpeed = 16 - int(speed / curveSens)
+                    leftSpeed = rightSpeed
+
+                    rightSpeed = rightSpeed / 16 * maxSpeed
+                    leftSpeed = leftSpeed / 16 * maxSpeed
+
+                    # INVERTIRE SENSO DI ROTAZIONE MOTORI!!!!!!!
+
+                # Left
+                else:
+                    speed = cx - 16 # Range 0 - 16
+
+                    rightSpeed = int(speed - curveSens)
+                    leftSpeed = 16 - speed
+
+                    rightSpeed = rightSpeed / 16 * maxSpeed
+                    leftSpeed = leftSpeed / 16 * maxSpeed
+
+                    #STESSO SENSO DI ROTAZIONE!!!!!!!!
+
+                    
+        cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)    # Drawing centerpoint on the frame
     else :
         print("I don't see the line")
 
     # Video output
     cv2.imshow("Mask", new_mask)
-    cv2.imshow("Frame", frame)
+    cv2.imshow("Frame", cv2.resize(frame, (240,240)))
 
     # Exiting the loop
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
