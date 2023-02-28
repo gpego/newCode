@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from Squares_Detection import Detect_Squares
+import time
 #import RPi.GPIO as GPIO
 
 #cap = cv2.VideoCapture(1)
@@ -12,6 +13,12 @@ maxSpeed = 40
 curveSens = 4   # Min. value for curveSens = 2
 
 """
+EnaA, In1A, In2A, EnaB, In1B, In2B
+frontMotors = Motor(25, 24, 23, 27, 9, 22)
+backMotors = Motor(19, 26, 13, 12, 6, 5)
+
+enA = 25
+
 in1 = 4
 in2 = 17
 in3 = 27
@@ -34,6 +41,9 @@ GPIO.output(in2, GPIO.LOW)
 GPIO.output(in3, GPIO.LOW)
 GPIO.output(in4, GPIO.LOW)
 """
+
+prev_frame_time = 0
+new_frame_time = 0
 
 while True:
     ret, img = cap.read()
@@ -132,10 +142,19 @@ while True:
         cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)    # Drawing centerpoint on the frame
     else :
         print("I don't see the line")
+        #motori avanti maxSpeed, stesso senso di rotazione
 
     # Video output
     cv2.imshow("Mask", new_mask)
     cv2.imshow("Frame", cv2.resize(frame, (240,240)))
+
+    #FPS count
+    new_frame_time = time.time()
+
+    fps = 1/(new_frame_time-prev_frame_time)
+    prev_frame_time = new_frame_time
+
+    print(f"FPS = {fps}")
 
     # Exiting the loop
     if cv2.waitKey(1) & 0xff == ord('q'):   # 1 is the time in ms
